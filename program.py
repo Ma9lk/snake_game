@@ -73,6 +73,7 @@ class SnakeGame:
         self.wall.draw()
         self.snake.draw()
         self.food_maker.add_new_food()
+        self.console.draw_score()
         while True:
             self.snake.move()
             self.snake.update_direction(self.console.get_user_entry())
@@ -84,6 +85,7 @@ class SnakeGame:
 
     def end(self):
         self.console.close()
+        print("Score: {}".format(self.console.score))
 
 
 class Snake:
@@ -115,6 +117,7 @@ class Snake:
         return False
 
     def eats_food(self):
+        self._console.update_score()
         self._add_tail()
 
     @property
@@ -163,10 +166,10 @@ class Wall:
         self._x_max = x_max
         self._y_min = y_min
         self._y_max = y_max
-        self._left_line = VerticalLine(x_min, y_min, y_max)
-        self._right_line = VerticalLine(x_max, y_min, y_max)
-        self._upper_line = HorizontalLine(x_min, x_max, y_max)
-        self._lower_line = HorizontalLine(x_min, x_max, y_min)
+        self._left_wall = VerticalWall(x_min, y_min, y_max)
+        self._right_wall = VerticalWall(x_max, y_min, y_max)
+        self._lower_wall = HorizontalWall(x_min, x_max, y_min)
+        self._upper_wall = HorizontalWall(x_min, x_max, y_max)
         self.console = console
 
     def draw(self):
@@ -175,7 +178,7 @@ class Wall:
 
     @property
     def walls(self):
-        return [self._left_line, self._right_line, self._upper_line, self._lower_line]
+        return [self._left_wall, self._right_wall, self._upper_wall, self._lower_wall]
 
 
 class Line:
@@ -183,13 +186,13 @@ class Line:
         pass
 
 
-class HorizontalLine(Line):
+class HorizontalWall(Line):
     def __init__(self, x_min, x_max, y):
         super().__init__()
         self.points = [WallPoint(x, y) for x in range(x_min, x_max)]
 
 
-class VerticalLine(Line):
+class VerticalWall(Line):
     def __init__(self, x, y_min, y_max):
         super().__init__()
         self.points = [WallPoint(x, y) for y in range(y_min, y_max)]
@@ -197,9 +200,14 @@ class VerticalLine(Line):
 
 class Console:
     def __init__(self, x_size, y_size):
-        self._x_length = x_size
-        self._y_length = y_size
+        self._x_size = x_size
+        self._y_size = y_size
         self._win = self._create_console_window()
+        self.score = 0
+        self.draw_score()
+
+    def draw_point(self, point):
+        self._win.addch(point.y, point.x, point.symbol)
 
     def draw_line(self, points):
         for point in points:
@@ -208,8 +216,12 @@ class Console:
     def get_user_entry(self):
         return self._win.getch()
 
-    def draw_point(self, point):
-        self._win.addch(point.y, point.x, point.symbol)
+    def update_score(self):
+        self.score += 1
+        self.draw_score()
+
+    def draw_score(self):
+        self._win.addstr(0, 2, 'Score : {} '.format(self.score))
 
     @staticmethod
     def close():
@@ -217,12 +229,10 @@ class Console:
 
     def _create_console_window(self):
         curses.initscr()
-        win = curses.newwin(self._y_length, self._x_length)
+        win = curses.newwin(self._y_size, self._x_size)
         win.keypad(1)
-        # curses.noecho()
         curses.curs_set(0)
         win.border(0)
-        # win.nodelay(1)
         win.timeout(500)
         return win
 
