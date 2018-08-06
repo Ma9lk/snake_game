@@ -68,34 +68,39 @@ class SnakeGame:
     def __init__(self):
         x_size = 80
         y_size = 20
-        self.console = Console(x_size, y_size)
+        self._console = Console(x_size, y_size)
         tail = SnakePoint(10, 10)
         snake_length = 4
-        self.snake = Snake(tail, snake_length, Direction.KEY_RIGHT, self.console)
-        self.wall = Wall(0, x_size - 1, 0, y_size - 1, self.console)
-        self.food_maker = FoodMaker(x_size, y_size, self.console)
+        self._snake = Snake(tail, snake_length, Direction.KEY_RIGHT, self._console)
+        self._wall = Wall(0, x_size - 1, 0, y_size - 1, self._console)
+        self._food_maker = FoodMaker(x_size, y_size, self._console)
+        self.score = 0
 
     def start(self):
-        self.wall.draw()
-        self.snake.draw()
-        self.food_maker.add_new_food()
-        self.console.draw_score()
+        self._wall.draw()
+        self._snake.draw()
+        self._food_maker.add_new_food()
+        self._console.draw_score(self.score)
         while True:
-            self.snake.move()
-            self.snake.update_direction(self.console.get_user_entry())
-            if self.snake.hits_food(self.food_maker.current_food_point):
-                self.snake.eats_food()
-                self.food_maker.add_new_food()
-                self.console.speed_up()
-            if self.snake.hits_wall(self.wall):
+            self._snake.move()
+            self._snake.update_direction(self._console.get_user_entry())
+            if self._snake.hits_food(self._food_maker.current_food_point):
+                self._snake.eats_food()
+                self._update_score()
+                self._food_maker.add_new_food()
+                self._console.speed_up()
+            if self._snake.hits_wall(self._wall) or self._snake.hits_tail():
                 break
-            if self.snake.hits_tail():
-                break
-        self.console.draw_game_over()
+        self._console.draw_game_over(self.score)
+        sleep(5)
 
     def end(self):
-        self.console.close()
-        print("Score: {}".format(self.console.score))
+        self._console.close()
+        print("Score: {}".format(self.score))
+
+    def _update_score(self):
+        self.score += 1
+        self._console.draw_score(self.score)
 
 
 class Snake:
@@ -131,7 +136,6 @@ class Snake:
         return False
 
     def eats_food(self):
-        self._console.update_score()
         self._add_tail()
 
     def hits_wall(self, wall):
@@ -219,10 +223,8 @@ class Console:
     def __init__(self, x_size, y_size):
         self._x_size = x_size
         self._y_size = y_size
-        self.inverse_speed_factor = 300
+        self._inverse_speed_factor = 300
         self._win = self._create_console_window()
-        self.score = 0
-        self.draw_score()
 
     def draw_point(self, point):
         self._win.addch(point.y, point.x, point.symbol)
@@ -234,21 +236,16 @@ class Console:
     def get_user_entry(self):
         return self._win.getch()
 
-    def update_score(self):
-        self.score += 1
-        self.draw_score()
+    def draw_score(self, score):
+        self._win.addstr(0, 2, 'Score : {} '.format(score))
 
-    def draw_score(self):
-        self._win.addstr(0, 2, 'Score : {} '.format(self.score))
-
-    def draw_game_over(self):
-        self._win.addstr(int(self._y_size / 2), int(self._x_size / 2 - 10), 'GAME OVER! SCORE: {}'.format(self.score))
+    def draw_game_over(self, score):
+        self._win.addstr(int(self._y_size / 2), int(self._x_size / 2 - 10), 'GAME OVER! SCORE: {}'.format(score))
         self.get_user_entry()
-        sleep(5)
 
     def speed_up(self):
-        self.inverse_speed_factor /= 1.05
-        self._win.timeout(int(self.inverse_speed_factor))
+        self._inverse_speed_factor /= 1.05
+        self._win.timeout(int(self._inverse_speed_factor))
 
     @staticmethod
     def close():
@@ -260,7 +257,7 @@ class Console:
         win.keypad(1)
         curses.curs_set(0)
         win.border(0)
-        win.timeout(self.inverse_speed_factor)
+        win.timeout(self._inverse_speed_factor)
         return win
 
 
