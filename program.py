@@ -82,6 +82,8 @@ class SnakeGame:
                 self.food_maker.add_new_food()
             if self.snake.hits_wall(self.wall):
                 break
+            if self.snake.hits_tail():
+                break
 
     def end(self):
         self.console.close()
@@ -103,13 +105,17 @@ class Snake:
 
     def update_direction(self, user_entry):
         if user_entry == KEY_UP:
-            self._direction = Direction.KEY_UP
+            if self._direction != Direction.KEY_DOWN:
+                self._direction = Direction.KEY_UP
         elif user_entry == KEY_RIGHT:
-            self._direction = Direction.KEY_RIGHT
+            if self._direction != Direction.KEY_LEFT:
+                self._direction = Direction.KEY_RIGHT
         elif user_entry == KEY_DOWN:
-            self._direction = Direction.KEY_DOWN
+            if self._direction != Direction.KEY_UP:
+                self._direction = Direction.KEY_DOWN
         elif user_entry == KEY_LEFT:
-            self._direction = Direction.KEY_LEFT
+            if self._direction != Direction.KEY_RIGHT:
+                self._direction = Direction.KEY_LEFT
 
     def hits_food(self, point):
         if self.head == point:
@@ -140,6 +146,9 @@ class Snake:
 
     def hits_wall(self, wall):
         return any(self.head == wall for wall in wall.walls)
+
+    def hits_tail(self):
+        return any([self.head == body_point for body_point in self._points[:-1:]])
 
 
 class FoodMaker:
