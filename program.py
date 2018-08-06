@@ -84,6 +84,7 @@ class SnakeGame:
                 break
             if self.snake.hits_tail():
                 break
+        self.console.draw_game_over()
 
     def end(self):
         self.console.close()
@@ -232,6 +233,11 @@ class Console:
     def draw_score(self):
         self._win.addstr(0, 2, 'Score : {} '.format(self.score))
 
+    def draw_game_over(self):
+        self._win.addstr(int(self._y_size / 2), int(self._x_size / 2 - 10), 'GAME OVER! SCORE: '.format(self.score))
+        self.get_user_entry()
+        sleep(5)
+
     @staticmethod
     def close():
         curses.endwin()
@@ -249,5 +255,4 @@ class Console:
 if __name__ == '__main__':
     game = SnakeGame()
     game.start()
-    sleep(3)
     game.end()
