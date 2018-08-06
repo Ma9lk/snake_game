@@ -86,6 +86,7 @@ class SnakeGame:
             if self.snake.hits_food(self.food_maker.current_food_point):
                 self.snake.eats_food()
                 self.food_maker.add_new_food()
+                self.console.speed_up()
             if self.snake.hits_wall(self.wall):
                 break
             if self.snake.hits_tail():
@@ -218,6 +219,7 @@ class Console:
     def __init__(self, x_size, y_size):
         self._x_size = x_size
         self._y_size = y_size
+        self.inverse_speed_factor = 300
         self._win = self._create_console_window()
         self.score = 0
         self.draw_score()
@@ -244,6 +246,10 @@ class Console:
         self.get_user_entry()
         sleep(5)
 
+    def speed_up(self):
+        self.inverse_speed_factor /= 1.05
+        self._win.timeout(int(self.inverse_speed_factor))
+
     @staticmethod
     def close():
         curses.endwin()
@@ -254,7 +260,7 @@ class Console:
         win.keypad(1)
         curses.curs_set(0)
         win.border(0)
-        win.timeout(500)
+        win.timeout(self.inverse_speed_factor)
         return win
 
 
