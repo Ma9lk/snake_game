@@ -133,6 +133,12 @@ class Snake:
         self._console.update_score()
         self._add_tail()
 
+    def hits_wall(self, wall):
+        return any(self.head == wall for wall in wall.walls)
+
+    def hits_tail(self):
+        return any([self.head == body_point for body_point in self._points[:-1:]])
+
     @property
     def head(self):
         return self._points[-1]
@@ -150,12 +156,6 @@ class Snake:
 
     def _add_tail(self):
         self._points.insert(0, self._points[0].copy())
-
-    def hits_wall(self, wall):
-        return any(self.head == wall for wall in wall.walls)
-
-    def hits_tail(self):
-        return any([self.head == body_point for body_point in self._points[:-1:]])
 
 
 class FoodMaker:
