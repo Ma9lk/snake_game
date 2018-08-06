@@ -240,7 +240,7 @@ class Console:
         self._win.addstr(0, 2, 'Score : {} '.format(self.score))
 
     def draw_game_over(self):
-        self._win.addstr(int(self._y_size / 2), int(self._x_size / 2 - 10), 'GAME OVER! SCORE: '.format(self.score))
+        self._win.addstr(int(self._y_size / 2), int(self._x_size / 2 - 10), 'GAME OVER! SCORE: {}'.format(self.score))
         self.get_user_entry()
         sleep(5)
 
